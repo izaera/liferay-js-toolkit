@@ -1,0 +1,7 @@
+{
+	"name": "@angular/core",
+	"version": "1.0.0",
+	"peerDependencies": {
+      "rxjs": "^2.0.0"
+    }
+}

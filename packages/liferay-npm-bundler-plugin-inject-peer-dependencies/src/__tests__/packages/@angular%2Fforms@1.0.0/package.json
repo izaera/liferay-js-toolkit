@@ -1,0 +1,7 @@
+{
+	"name": "@angular/forms",
+	"version": "1.0.0",
+	"peerDependencies": {
+		"@angular/core": "1.0.0"
+	}
+}
