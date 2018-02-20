@@ -66,7 +66,19 @@ function collectPeerDependencies(pkgsDir, pkg) {
 					path.join(peerPkg.dir, 'package.json')
 				);
 
-				peerDependencies[peerPkg] = peerPkgJson.dependencies;
+				tengo que tener un hash donde por cada paquete@version haya:
+					dependencies: un hash con entradas <nombre, semver>
+					peerDependencies: un hash con entradas <nombre, paquete@version>
+					
+				asi luego, cuando encontramos un require de un paquete que no esta en el package.json dependencies del paquete
+				vamos explorando hacia arriba en las peerDependencies hasta que encontremos una dependencia del paquete en cuestion y usamos esa semver
+				si no encontramos nada buscando en peerDependencies buscamos en el contexto global y usamos ese paquete
+				
+
+				peerDependencies[peerPkg] = {
+					dependencies: peerPkgJson.dependencies,
+					peerDependencies: peerPkgJson.peerDependencies,
+				};
 
 				peerDependencies = Object.assign(
 					peerDependencies,
