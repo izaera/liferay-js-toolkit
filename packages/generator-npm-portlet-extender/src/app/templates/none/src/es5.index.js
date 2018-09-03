@@ -16,20 +16,21 @@
  *   		'/' and doesn't contain the protocol, host, port or authentication
  *   		values. Just the path.
  *
- * @param  {Object} params a hash with values of interest to the portlet:
+ * @param  {Object} params a hash with values of interest to the portlet
  * @return {void}
  */
+function main(params) {
+    var out = document.getElementById(params.portletElementId);
 
-module.exports = function(params) {
-  var out = document.getElementById(params.portletElementId);
-
-  out.innerHTML =
-    "Porlet Namespace: " +
-    params.portletNamespace +
-    "<br/>" +
-    "Context Path: " +
-    params.contextPath +
-    "<br/>" +
-    "Portlet Element Id: " +
-    params.portletElementId;
+    out.innerHTML =
+        "Porlet Namespace: " +
+        params.portletNamespace +
+        "<br/>" +
+        "Context Path: " +
+        params.contextPath +
+        "<br/>" +
+        "Portlet Element Id: " +
+        params.portletElementId;
 };
+
+module.exports = main;

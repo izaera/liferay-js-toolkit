@@ -61,28 +61,79 @@ export default class extends Generator {
 			},
 		]);
 
-		this.sourceRoot(
-			path.join(__dirname, 'templates', this.answers.framework)
-		);
+		const framework = this.answers.framework;
+
+		this.sourceRoot(path.join(__dirname, 'templates', framework));
+
+		const capitalizedFramework = (this.answers.capitalizedFramework =
+			framework.charAt(0).toUpperCase() + framework.substr(1));
+
+		const promptForFramework = this[`_promptFor${capitalizedFramework}`];
+
+		if (promptForFramework) {
+			Object.assign(this.answers, await promptForFramework.bind(this)());
+		}
+	}
+
+	/**
+	 * @return {Object}
+	 */
+	async _promptForNone() {
+		return await this.prompt([
+			{
+				type: 'confirm',
+				name: 'useBabel',
+				message:
+					'Do you want to use Babel to transpile files from ES2015+ to ES5?',
+				default: true,
+			},
+		]);
 	}
 
 	/**
 	 */
 	writing() {
-		this._copyFile('scripts/copy-files.js');
-		this._copyFile('src/index.js');
-		this._copyFile('dot.gitignore', {dest: '.gitignore'});
-		this._copyFile('dot.npmbundlerrc', {dest: '.npmbundlerrc'});
+		const writeForFramework = this[
+			`_writeFor${this.answers.capitalizedFramework}`
+		];
+
+		if (!writeForFramework) {
+			throw new Error(`Unsupported framework ${this.answers.framework}`);
+		}
+
+		writeForFramework.bind(this)();
+	}
+
+	/**
+	 */
+	_writeForNone() {
+		let variant;
+
+		if (this.answers.useBabel) {
+			variant = 'es6';
+
+			this._copyFile('.babelrc', {variant});
+		} else {
+			variant = 'es5';
+
+			this._copyFile('scripts/copy-files.js', {variant});
+		}
+
+		this._copyFile('README.md');
+		this._copyFile('.gitignore');
+
 		this._copyTpl(
-			'_package.json',
+			'package.json',
 			{
 				name: this.answers.projectName,
 				description: this.answers.projectDescription,
 				displayCategory: this.answers.displayCategory,
 			},
-			{dest: 'package.json'}
+			{variant}
 		);
-		this._copyFile('README.md');
+		this._copyFile('.npmbundlerrc');
+
+		this._copyFile('src/index.js', {variant});
 	}
 
 	/**
@@ -96,11 +147,19 @@ export default class extends Generator {
 	/**
 	 * @param  {String} src
 	 * @param  {Object} ctx
-	 * @param  {String} destination
+	 * @param  {String} dest
+	 * @param  {String} variant
 	 */
-	_copyTpl(src, ctx = {}, {dest} = {}) {
+	_copyTpl(src, ctx = {}, {dest, variant} = {}) {
 		if (!dest) {
 			dest = src;
+		}
+
+		if (variant) {
+			const dirname = path.dirname(src);
+			const basename = path.basename(src);
+
+			src = path.join(dirname, `${variant}.${basename}`);
 		}
 
 		this.fs.copyTpl(
@@ -112,13 +171,14 @@ export default class extends Generator {
 
 	/**
 	 * @param  {String} src
-	 * @param  {String} destination
+	 * @param  {String} dest
+	 * @param  {String} variant
 	 */
-	_copyFile(src, {dest} = {}) {
+	_copyFile(src, {dest, variant} = {}) {
 		if (!dest) {
 			dest = src;
 		}
 
-		this._copyTpl(src, {}, {dest});
+		this._copyTpl(src, {}, {dest, variant});
 	}
 }
