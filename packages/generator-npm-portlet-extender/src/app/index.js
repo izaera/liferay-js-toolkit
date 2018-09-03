@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {Separator} from 'inquirer';
 import path from 'path';
 import Generator from 'yeoman-generator';
@@ -122,18 +123,37 @@ export default class extends Generator {
 		this._copyFile('README.md');
 		this._copyFile('.gitignore');
 
-		this._copyTpl(
-			'package.json',
-			{
+		this._copyFile('package.json', {
+			variant,
+			ctx: {
 				name: this.answers.projectName,
 				description: this.answers.projectDescription,
 				displayCategory: this.answers.displayCategory,
 			},
-			{variant}
-		);
+		});
 		this._copyFile('.npmbundlerrc');
 
 		this._copyFile('src/index.js', {variant});
+	}
+
+	/**
+	 */
+	_writeForAngular() {
+		this._copyFile('README.md');
+		this._copyFile('.gitignore');
+		this._copyFile('package.json', {
+			ctx: {
+				name: this.answers.projectName,
+				description: this.answers.projectDescription,
+				displayCategory: this.answers.displayCategory,
+			},
+		});
+		this._copyFile('tsconfig.json');
+		this._copyFile('.npmbundlerrc');
+
+		this._copyDir('src', {
+			ctx: {projectName: this.answers.projectName},
+		});
 	}
 
 	/**
@@ -150,7 +170,7 @@ export default class extends Generator {
 	 * @param  {String} dest
 	 * @param  {String} variant
 	 */
-	_copyTpl(src, ctx = {}, {dest, variant} = {}) {
+	_copyFile(src, {ctx = {}, dest, variant} = {}) {
 		if (!dest) {
 			dest = src;
 		}
@@ -171,14 +191,24 @@ export default class extends Generator {
 
 	/**
 	 * @param  {String} src
-	 * @param  {String} dest
+	 * @param  {Object} ctx
 	 * @param  {String} variant
 	 */
-	_copyFile(src, {dest, variant} = {}) {
-		if (!dest) {
-			dest = src;
-		}
+	_copyDir(src, {ctx = {}, variant} = {}) {
+		const files = fs.readdirSync(this.templatePath(src));
 
-		this._copyTpl(src, {}, {dest, variant});
+		files.forEach(file => {
+			if (file === '.DS_Store') {
+				return;
+			}
+
+			const filePath = path.join(src, file);
+
+			if (fs.statSync(this.templatePath(filePath)).isDirectory()) {
+				this._copyDir(filePath, {ctx, variant});
+			} else {
+				this._copyFile(filePath, {ctx, variant});
+			}
+		});
 	}
 }
