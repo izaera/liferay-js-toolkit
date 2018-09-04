@@ -232,7 +232,7 @@ export default class extends Generator {
 		});
 		this._copyFile('scripts/copy-resources.js');
 		this._copyFile('tsconfig.json');
-		this._copyFile('scripts/replace-bootstrap-module.js');
+		this._copyFile('scripts/replace-tokens.js');
 		this._copyFile('.npmbundlerrc');
 
 		if (this.answers.liferayDir) {
