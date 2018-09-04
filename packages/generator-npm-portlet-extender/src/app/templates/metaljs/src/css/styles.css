@@ -1,0 +1,9 @@
+.portletNamespace, .contextPath, .portletElementId {
+	font-weight: bold;
+}
+
+.value {
+	font-style: italic;
+	font-weight: normal;
+}
+

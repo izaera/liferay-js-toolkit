@@ -153,6 +153,21 @@ export default class extends Generator {
 	}
 
 	/**
+	 * @return {Object}
+	 */
+	async _promptForMetaljs() {
+		return await this.prompt([
+			{
+				type: 'confirm',
+				name: 'importMetaljs',
+				message:
+					'Do you want to use import Metal.js packages from Liferay?',
+				default: true,
+			},
+		]);
+	}
+
+	/**
 	 */
 	writing() {
 		const writeForFramework = this[
@@ -233,6 +248,37 @@ export default class extends Generator {
 		this._copyDir('src', {
 			ctx: {projectName: this.answers.projectName},
 		});
+	}
+
+	/**
+	 */
+	_writeForMetaljs() {
+		const variant = this.answers.importMetaljs ? 'import' : 'local';
+
+		this._copyFile('README.md');
+		this._copyFile('.gitignore');
+
+		this._copyFile('package.json', {
+			ctx: {
+				name: this.answers.projectName,
+				description: this.answers.projectDescription,
+				displayCategory: this.answers.displayCategory,
+			},
+		});
+		this._copyFile('.babelrc');
+		this._copyFile('.npmbundlerrc', {variant});
+
+		if (this.answers.liferayDir) {
+			this._copyFile('scripts/deploy.js', {
+				ctx: {
+					projectName: this.answers.projectName,
+					liferayDir: this.answers.liferayDir,
+				},
+			});
+		}
+
+		this._copyDir('css');
+		this._copyDir('src');
 	}
 
 	/**
