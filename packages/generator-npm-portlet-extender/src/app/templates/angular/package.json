@@ -41,7 +41,7 @@
         "typescript": "~2.7.2"
     },
     "scripts": {
-        "build": "node ./scripts/copy-resources && tsc && liferay-npm-bundler",
+        "build": "node ./scripts/copy-resources && tsc && node ./scripts/replace-bootstrap-module && liferay-npm-bundler",
         "deploy": "npm run build && node ./scripts/deploy"
     },
     "portlet": {

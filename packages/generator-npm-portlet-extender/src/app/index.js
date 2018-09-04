@@ -232,6 +232,7 @@ export default class extends Generator {
 		});
 		this._copyFile('scripts/copy-resources.js');
 		this._copyFile('tsconfig.json');
+		this._copyFile('scripts/replace-bootstrap-module.js');
 		this._copyFile('.npmbundlerrc');
 
 		if (this.answers.liferayDir) {
@@ -243,9 +244,7 @@ export default class extends Generator {
 			});
 		}
 
-		this._copyDir('src', {
-			ctx: {bootstrapModule: `${this.answers.projectName}@1.0.0/main`},
-		});
+		this._copyDir('src');
 	}
 
 	/**

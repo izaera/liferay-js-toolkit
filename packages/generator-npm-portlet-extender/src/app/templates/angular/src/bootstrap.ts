@@ -12,7 +12,7 @@ declare var Liferay: Liferay;
  * 									portlet
  */
 export default function(params: LiferayParams) {
-	Liferay.Loader.require('<%= bootstrapModule %>', (main: any) => {
+	Liferay.Loader.require('$$BOOTSTRAP_MODULE$$', (main: any) => {
 		main.default(params);
 	});
 }
