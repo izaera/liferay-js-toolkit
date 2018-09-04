@@ -1,10 +1,11 @@
 var fs = require("fs");
 var ncp = require("ncp").ncp;
 
-fs.mkdirSync("build");
-fs.mkdirSync("build/src");
+try {
+    fs.mkdirSync("build");
+} catch (err) {}
 
-ncp("src", "build/src", err => {
+ncp("src", "build", err => {
     if (err) {
         console.error(err);
         process.exit(1);

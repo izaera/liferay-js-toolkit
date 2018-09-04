@@ -184,17 +184,7 @@ export default class extends Generator {
 	/**
 	 */
 	_writeForNone() {
-		let variant;
-
-		if (this.answers.useBabel) {
-			variant = 'es6';
-
-			this._copyFile('.babelrc', {variant});
-		} else {
-			variant = 'es5';
-
-			this._copyFile('scripts/copy-files.js', {variant});
-		}
+		const variant = this.answers.useBabel ? 'es6' : 'es5';
 
 		this._copyFile('README.md');
 		this._copyFile('.gitignore');
@@ -207,6 +197,11 @@ export default class extends Generator {
 				displayCategory: this.answers.displayCategory,
 			},
 		});
+		if (this.answers.useBabel) {
+			this._copyFile('.babelrc', {variant});
+		} else {
+			this._copyFile('scripts/copy-files.js', {variant});
+		}
 		this._copyFile('.npmbundlerrc');
 
 		if (this.answers.liferayDir) {
