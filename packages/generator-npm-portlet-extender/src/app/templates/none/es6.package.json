@@ -9,7 +9,8 @@
         "liferay-npm-bundler": "^2.0.0"
     },
     "scripts": {
-        "build": "babel --source-maps -D -d build/lib src && liferay-npm-bundler"
+        "build": "babel --source-maps -D -d build/lib src && liferay-npm-bundler",
+        "deploy": "npm run build && node ./scripts/deploy"
     },
     "portlet": {
         "com.liferay.portlet.display-category": "<%= displayCategory %>",

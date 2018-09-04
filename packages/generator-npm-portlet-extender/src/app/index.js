@@ -26,7 +26,22 @@ export default class extends Generator {
 	/**
 	 */
 	async prompting() {
-		this.answers = await this.prompt([
+		this.answers = {};
+
+		Object.assign(this.answers, await this._promptPortletQuestions());
+		Object.assign(this.answers, await this._promptDeployQuestions());
+		Object.assign(this.answers, await this._promptFrameworkQuestions());
+
+		this.sourceRoot(
+			path.join(__dirname, 'templates', this.answers.framework)
+		);
+	}
+
+	/**
+	 * @return {Object}
+	 */
+	async _promptPortletQuestions() {
+		return await this.prompt([
 			{
 				type: 'input',
 				name: 'projectName',
@@ -45,35 +60,81 @@ export default class extends Generator {
 				message: 'Under which category should your portlet be listed?',
 				default: 'category.sample',
 			},
+		]);
+	}
+
+	/**
+	 * @return {Object}
+	 */
+	async _promptDeployQuestions() {
+		const answers = await this.prompt([
+			{
+				type: 'confirm',
+				name: 'liferayDirPresent',
+				message:
+					'Do you have a local installation of Liferay for development?',
+				default: true,
+			},
+		]);
+
+		if (answers.liferayDirPresent) {
+			return await this.prompt([
+				{
+					type: 'input',
+					name: 'liferayDir',
+					message:
+						'Where is your local installation of Liferay placed?',
+					// TODO: change this default
+					default: '/Users/ivan/Liferay/CE/bundles',
+					validate: (...args) => this._validateLiferayDir(...args),
+				},
+			]);
+		}
+
+		return {};
+	}
+
+	/**
+	 * @return {Object}
+	 */
+	async _promptFrameworkQuestions() {
+		let choices = [
+			new Separator(),
+			{name: FRAMEWORK.none, value: 'none'},
+			new Separator(),
+		];
+
+		Object.keys(FRAMEWORK).forEach(key => {
+			if (key === 'none') {
+				return;
+			}
+
+			choices.push({name: FRAMEWORK[key], value: key});
+		});
+
+		let answers = await this.prompt([
 			{
 				type: 'list',
 				name: 'framework',
 				message: 'Do you want to use any framework in your project?',
-				choices: [
-					new Separator(),
-					{name: FRAMEWORK.none, value: 'none'},
-					new Separator(),
-					{name: FRAMEWORK.angular, value: 'angular'},
-					{name: FRAMEWORK.jquery, value: 'jquery'},
-					{name: FRAMEWORK.metaljs, value: 'metaljs'},
-					{name: FRAMEWORK.react, value: 'react'},
-					{name: FRAMEWORK.vuejs, value: 'vuejs'},
-				],
+				choices,
 			},
 		]);
 
-		const framework = this.answers.framework;
+		const framework = answers.framework;
 
-		this.sourceRoot(path.join(__dirname, 'templates', framework));
+		answers.capitalizedFramework =
+			framework.charAt(0).toUpperCase() + framework.substr(1);
 
-		const capitalizedFramework = (this.answers.capitalizedFramework =
-			framework.charAt(0).toUpperCase() + framework.substr(1));
+		const capitalizedFramework = answers.capitalizedFramework;
 
 		const promptForFramework = this[`_promptFor${capitalizedFramework}`];
 
 		if (promptForFramework) {
-			Object.assign(this.answers, await promptForFramework.bind(this)());
+			Object.assign(answers, await promptForFramework.bind(this)());
 		}
+
+		return answers;
 	}
 
 	/**
@@ -133,6 +194,15 @@ export default class extends Generator {
 		});
 		this._copyFile('.npmbundlerrc');
 
+		if (this.answers.liferayDir) {
+			this._copyFile('scripts/deploy.js', {
+				ctx: {
+					projectName: this.answers.projectName,
+					liferayDir: this.answers.liferayDir,
+				},
+			});
+		}
+
 		this._copyFile('src/index.js', {variant});
 	}
 
@@ -151,6 +221,15 @@ export default class extends Generator {
 		this._copyFile('tsconfig.json');
 		this._copyFile('.npmbundlerrc');
 
+		if (this.answers.liferayDir) {
+			this._copyFile('scripts/deploy.js', {
+				ctx: {
+					projectName: this.answers.projectName,
+					liferayDir: this.answers.liferayDir,
+				},
+			});
+		}
+
 		this._copyDir('src', {
 			ctx: {projectName: this.answers.projectName},
 		});
@@ -162,6 +241,22 @@ export default class extends Generator {
 		this.installDependencies({
 			bower: false,
 		});
+	}
+
+	/**
+	 * @param  {String} input
+	 * @return {boolean}
+	 */
+	_validateLiferayDir(input) {
+		if (!fs.existsSync(input)) {
+			return 'Directory does not exist';
+		}
+
+		if (!fs.existsSync(path.join(input, 'osgi', 'modules'))) {
+			return 'Directory does not look like a Liferay installation: osgi/modules directory is missing';
+		}
+
+		return true;
 	}
 
 	/**

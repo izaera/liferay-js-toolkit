@@ -40,7 +40,8 @@
         "typescript": "~2.7.2"
     },
     "scripts": {
-        "build": "tsc && liferay-npm-bundler"
+        "build": "tsc && liferay-npm-bundler",
+        "deploy": "npm run build && node ./scripts/deploy"
     },
     "portlet": {
         "com.liferay.portlet.display-category": "<%= displayCategory %>",

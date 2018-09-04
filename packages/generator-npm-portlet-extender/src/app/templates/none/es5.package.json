@@ -8,7 +8,8 @@
         "ncp": "^2.0.0"
     },
     "scripts": {
-        "build": "node ./scripts/copy-files && liferay-npm-bundler"
+        "build": "node ./scripts/copy-files && liferay-npm-bundler",
+        "deploy": "npm run build && node ./scripts/deploy"
     },
     "portlet": {
         "com.liferay.portlet.display-category": "<%= displayCategory %>",
