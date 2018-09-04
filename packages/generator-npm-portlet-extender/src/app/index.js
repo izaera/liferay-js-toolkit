@@ -227,6 +227,7 @@ export default class extends Generator {
 	_writeForAngular() {
 		this._copyFile('README.md');
 		this._copyFile('.gitignore');
+
 		this._copyFile('package.json', {
 			ctx: {
 				name: this.answers.projectName,
@@ -234,6 +235,7 @@ export default class extends Generator {
 				displayCategory: this.answers.displayCategory,
 			},
 		});
+		this._copyFile('scripts/copy-resources.js');
 		this._copyFile('tsconfig.json');
 		this._copyFile('.npmbundlerrc');
 
@@ -247,7 +249,7 @@ export default class extends Generator {
 		}
 
 		this._copyDir('src', {
-			ctx: {projectName: this.answers.projectName},
+			ctx: {bootstrapModule: `${this.answers.projectName}@1.0.0/main`},
 		});
 	}
 
