@@ -20,13 +20,20 @@
  * @return {void}
  */
 export default function main({portletNamespace, contextPath, portletElementId}) {
-    const out = document.getElementById(portletElementId);
+    const node = document.getElementById(portletElementId);
 
-    out.innerHTML =`
-        Porlet Namespace: ${portletNamespace}
-        <br/>
-        Context Path: ${contextPath}
-        <br/>
-        Portlet Element Id: ${portletElementId}
+    node.innerHTML =`
+        <div class="portletNamespace">
+            Porlet Namespace: 
+            <span class="value">${portletNamespace}</span>
+        </div>
+        <div class="contextPath">
+            Context Path: 
+            <span class="value">${contextPath}</span>
+        </div>
+        <div class="portletElementId">
+            Portlet Element Id: 
+            <span class="value">${portletElementId}</span>
+        </div>
     `;
-};
+}

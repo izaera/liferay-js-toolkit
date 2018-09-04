@@ -20,17 +20,27 @@
  * @return {void}
  */
 function main(params) {
-    var out = document.getElementById(params.portletElementId);
+    var node = document.getElementById(params.portletElementId);
 
-    out.innerHTML =
-        "Porlet Namespace: " +
-        params.portletNamespace +
-        "<br/>" +
-        "Context Path: " +
-        params.contextPath +
-        "<br/>" +
-        "Portlet Element Id: " +
-        params.portletElementId;
-};
+    node.innerHTML =
+        '<div class="portletNamespace">' +
+            'Porlet Namespace: ' +
+            '<span class="value">' +
+                params.portletNamespace +
+            '</span>' +
+        '</div>' +
+        '<div class="contextPath">' +
+            'Context Path: ' +
+            '<span class="value">' +
+                params.contextPath +
+            '</span>' +
+        '</div>' +
+        '<div class="portletElementId">' +
+            'Portlet Element Id: ' +
+            '<span class="value">' +
+                params.portletElementId +
+            '</span>' +
+        '</div>';
+}
 
 module.exports = main;

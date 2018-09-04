@@ -218,6 +218,7 @@ export default class extends Generator {
 			});
 		}
 
+		this._copyDir('src/css');
 		this._copyFile('src/index.js', {variant});
 	}
 
@@ -277,7 +278,6 @@ export default class extends Generator {
 			});
 		}
 
-		this._copyDir('css');
 		this._copyDir('src');
 	}
 

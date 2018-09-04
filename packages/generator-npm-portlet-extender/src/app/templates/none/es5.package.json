@@ -13,6 +13,7 @@
     },
     "portlet": {
         "com.liferay.portlet.display-category": "<%= displayCategory %>",
+        "com.liferay.portlet.header-portlet-css": "/src/css/styles.css",
         "com.liferay.portlet.instanceable": "true",
         "javax.portlet.display-name": "<%= description %>",
         "javax.portlet.security-role-ref": "power-user,user"
