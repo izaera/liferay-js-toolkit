@@ -3,6 +3,8 @@ import {Separator} from 'inquirer';
 import path from 'path';
 import Generator from 'yeoman-generator';
 
+import * as cfg from '../config';
+
 const FRAMEWORK = {
 	none: 'None (just raw Javascript)',
 	angular: 'Angular',
@@ -84,8 +86,7 @@ export default class extends Generator {
 					name: 'liferayDir',
 					message:
 						'Where is your local installation of Liferay placed?',
-					// TODO: change this default
-					default: '/Users/ivan/Liferay/CE/bundles',
+					default: cfg.getDefaultDeployDir(),
 					validate: (...args) => this._validateLiferayDir(...args),
 				},
 			]);
