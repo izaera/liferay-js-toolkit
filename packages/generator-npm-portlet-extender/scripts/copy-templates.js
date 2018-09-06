@@ -1,9 +1,15 @@
 const fs = require('fs');
 const ncp = require('ncp').ncp;
 
-const generators = ['app'];
+const generators = fs
+	.readdirSync('src')
+	.filter(file => fs.statSync(`src/${file}`).isDirectory());
 
 generators.forEach(generator => {
+	if (!fs.existsSync(`src/${generator}/templates`)) {
+		return;
+	}
+
 	mkdir('generators');
 	mkdir(`generators/${generator}`);
 	mkdir(`generators/${generator}/templates`);
