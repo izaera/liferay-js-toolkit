@@ -1,0 +1,21 @@
+body {
+  font-family: system-ui;
+}
+
+.portlet-content {
+  border: 1px solid rgb(231, 231, 237);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.portlet-header {
+  margin-bottom: 3rem;
+}
+
+.portlet-header h2 {
+  color: #6b6c7e;
+  font-size: 0.875rem;
+  font-weight: 600px;
+  line-height: 2.2;
+  text-transform: uppercase;
+}
