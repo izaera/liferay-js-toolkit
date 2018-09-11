@@ -110,5 +110,6 @@
 				"metal-state": ">=2.16.0"
 			}
 		}
-	}
+	},
+	"output": "classes/META-INF/resources"
 }
