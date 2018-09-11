@@ -1,16 +1,59 @@
-const projectDir = process.cwd();
+import path from 'path';
+
 const cfg = require('../config');
 
+const savedCwd = process.cwd();
+
 beforeEach(() => {
-	process.chdir(
-		`${projectDir}/packages/liferay-npm-bundler/src/__tests__/config/` +
-			'default'
-	);
+	process.chdir(path.join(__dirname, '__fixtures__', 'config', 'default'));
 	cfg.reloadConfig();
 });
 
 afterEach(() => {
-	process.chdir(projectDir);
+	process.chdir(savedCwd);
+});
+
+describe('isCreateJar()', () => {
+	it('returns false when config missing', () => {
+		expect(cfg.isCreateJar()).toBeFalsy();
+	});
+
+	it('works with boolean config', () => {
+		process.chdir(
+			path.join(__dirname, '__fixtures__', 'config', 'create-jar-bool')
+		);
+		cfg.reloadConfig();
+
+		expect(cfg.isCreateJar()).toBeTruthy();
+	});
+
+	it('works with Object config', () => {
+		process.chdir(
+			path.join(__dirname, '__fixtures__', 'config', 'create-jar')
+		);
+		cfg.reloadConfig();
+
+		expect(cfg.isCreateJar()).toBeTruthy();
+	});
+});
+
+describe('isAutoDeployPortlet()', () => {
+	it('returns false when create-jar config missing', () => {
+		expect(cfg.isAutoDeployPortlet()).toBe(false);
+	});
+
+	it('returns true when create-jar config present and auto-deploy-portlet missing', () => {
+		process.chdir(
+			path.join(__dirname, '__fixtures__', 'config', 'create-jar-empty')
+		);
+		cfg.reloadConfig();
+
+		expect(cfg.isAutoDeployPortlet()).toBe(true);
+	});
+
+	it('returns false when create-jar config present and auto-deploy-portlet false', () => {
+		expect(cfg.isAutoDeployPortlet()).toBe(false);
+	});
 });
 
 describe('getOutputDir()', () => {
@@ -55,10 +98,7 @@ describe('getExclusions()', () => {
 
 	// Impossible to test once we test for default exclusions
 	it('returns an empty array for unconfigured packages', () => {
-		process.chdir(
-			`${projectDir}/packages/liferay-npm-bundler/src/__tests__/config/` +
-				'empty'
-		);
+		process.chdir(path.join(__dirname, '__fixtures__', 'config', 'empty'));
 		cfg.reloadConfig();
 
 		const pkg = {
@@ -135,8 +175,7 @@ describe('getPlugins()', () => {
 
 	it('supports legacy package configurations correctly', () => {
 		process.chdir(
-			`${projectDir}/packages/liferay-npm-bundler/src/__tests__/config/` +
-				'legacy-packages'
+			path.join(__dirname, '__fixtures__', 'config', 'legacy-packages')
 		);
 		cfg.reloadConfig();
 

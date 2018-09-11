@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import readJsonSync from 'read-json-sync';
 
 let packageDirCache = {};
 
@@ -29,7 +30,16 @@ export function getPackageDir(modulePath) {
 
 		while (!found) {
 			try {
-				fs.statSync(path.join(dir, 'package.json'));
+				const pkgJsonPath = path.join(dir, 'package.json');
+
+				fs.statSync(pkgJsonPath);
+
+				const {version} = readJsonSync(pkgJsonPath);
+
+				if (version === undefined) {
+					throw new Error('No valid version field found');
+				}
+
 				found = true;
 			} catch (err) {
 				const dirname = path.dirname(dir);
@@ -65,4 +75,72 @@ export function getPackageTargetDir(name, version = null) {
 	}
 
 	return targetFolder;
+}
+
+/**
+ * Resolves a module name inside a package directory to a file relative (to
+ * package directory) path.
+ * For example, if you pass './lib' as moduleName and there's an 'index.js' file
+ * inside the 'lib' dir, the method returns './lib/index.js'.
+ * It also honors any 'package.json' with a 'main' entry in package subfolders.
+ * @param  {String} pkgDir path to package directory
+ * @param  {String} moduleName the module name
+ * @return {String} a relative path
+ */
+export function resolveModuleFile(pkgDir, moduleName) {
+	let fullModulePath = path.resolve(
+		path.join(pkgDir, ...moduleName.split('/'))
+	);
+	const moduleStats = safeStat(fullModulePath);
+
+	if (moduleStats.isDirectory()) {
+		// Given module name is a directory
+		const pkgJsonPath = path.join(fullModulePath, 'package.json');
+		const pkgJsonStats = safeStat(pkgJsonPath);
+
+		if (pkgJsonStats.isFile()) {
+			// Module directory has package.json file
+			const pkgJson = readJsonSync(pkgJsonPath);
+			const {main} = pkgJson;
+
+			if (main) {
+				// Module directory has package.json file with main entry:
+				// recursively resolve the main entry's file path
+				fullModulePath = path.join(
+					pkgDir,
+					resolveModuleFile(pkgDir, path.join(moduleName, main))
+				);
+			} else {
+				// Module directory has package.json file without main entry:
+				// assume index.js
+				fullModulePath = path.join(fullModulePath, 'index.js');
+			}
+		} else {
+			// Module directory has not package.json file: assume index.js
+			fullModulePath = path.join(fullModulePath, 'index.js');
+		}
+	} else if (moduleStats.isFile()) {
+		// Given module name is a file: do nothing
+	} else {
+		// Given module name is not a directory nor a file: add '.js' extension
+		fullModulePath += '.js';
+	}
+
+	return path.relative(pkgDir, fullModulePath);
+}
+
+/**
+ * Do as fs.statSync without throwing errors.
+ * @param  {String} path path to check
+ * @return {fs.Stats} a real fs.Stats object or a null object
+ */
+function safeStat(path) {
+	try {
+		return fs.statSync(path);
+	} catch (err) {
+		return {
+			isDirectory: () => false,
+			isFile: () => false,
+		};
+	}
 }

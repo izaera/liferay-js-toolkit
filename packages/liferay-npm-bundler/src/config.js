@@ -80,6 +80,10 @@ export function reloadConfig() {
 export function setProgramArgs(args) {
 	programArgs = args;
 
+	if (args.includes('-j') || args.includes('--create-jar')) {
+		config['create-jar'] = true;
+	}
+
 	if (args.includes('-r') || args.includes('--dump-report')) {
 		config['dump-report'] = true;
 	}
@@ -94,7 +98,10 @@ export function setProgramArgs(args) {
  * @return {String} the directory path (with native separators)
  */
 export function getOutputDir() {
-	const dir = config['output'] || 'build/resources/main/META-INF/resources';
+	const dir =
+		config['output'] ||
+		(isCreateJar() ? 'build' : 'build/resources/main/META-INF/resources');
+
 	return path.normalize(dir);
 }
 
@@ -233,6 +240,33 @@ export function getBabelConfig(pkg) {
 }
 
 /**
+ * Whether or not to create an OSGi bundle
+ * @return {boolean}
+ */
+export function isCreateJar() {
+	return config['create-jar'] || false;
+}
+
+/**
+ * Whether or not to add manifest header in JAR file to make the Portal auto
+ * deploy a portlet.
+ * @return {boolean}
+ */
+export function isAutoDeployPortlet() {
+	if (!isCreateJar()) {
+		return false;
+	}
+
+	if (typeof config['create-jar'] === 'object') {
+		if (config['create-jar']['auto-deploy-portlet'] === false) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
  * Whether or not to process npm packages serially
  * @return {boolean}
  */
@@ -270,6 +304,12 @@ export function isDumpReport() {
  * @return {boolean}
  */
 export function isNoTracking() {
+	if (config['no-tracking'] === undefined) {
+		if (process.env.LIFERAY_NPM_BUNDLER_NO_TRACKING) {
+			config['no-tracking'] = true;
+		}
+	}
+
 	if (config['no-tracking'] === undefined) {
 		let dir = process.cwd();
 
