@@ -1,16 +1,59 @@
-const projectDir = process.cwd();
+import path from 'path';
+
 const cfg = require('../config');
 
+const savedCwd = process.cwd();
+
 beforeEach(() => {
-	process.chdir(
-		`${projectDir}/packages/liferay-npm-bundler/src/__tests__/config/` +
-			'default'
-	);
+	process.chdir(path.join(__dirname, '__fixtures__', 'config', 'default'));
 	cfg.reloadConfig();
 });
 
 afterEach(() => {
-	process.chdir(projectDir);
+	process.chdir(savedCwd);
+});
+
+describe('isCreateJar()', () => {
+	it('returns false when config missing', () => {
+		expect(cfg.isCreateJar()).toBeFalsy();
+	});
+
+	it('works with boolean config', () => {
+		process.chdir(
+			path.join(__dirname, '__fixtures__', 'config', 'create-jar-bool')
+		);
+		cfg.reloadConfig();
+
+		expect(cfg.isCreateJar()).toBeTruthy();
+	});
+
+	it('works with Object config', () => {
+		process.chdir(
+			path.join(__dirname, '__fixtures__', 'config', 'create-jar')
+		);
+		cfg.reloadConfig();
+
+		expect(cfg.isCreateJar()).toBeTruthy();
+	});
+});
+
+describe('isAutoDeployPortlet()', () => {
+	it('returns false when create-jar config missing', () => {
+		expect(cfg.isAutoDeployPortlet()).toBe(false);
+	});
+
+	it('returns true when create-jar config present and auto-deploy-portlet missing', () => {
+		process.chdir(
+			path.join(__dirname, '__fixtures__', 'config', 'create-jar-empty')
+		);
+		cfg.reloadConfig();
+
+		expect(cfg.isAutoDeployPortlet()).toBe(true);
+	});
+
+	it('returns false when create-jar config present and auto-deploy-portlet false', () => {
+		expect(cfg.isAutoDeployPortlet()).toBe(false);
+	});
 });
 
 describe('getOutputDir()', () => {
@@ -55,10 +98,7 @@ describe('getExclusions()', () => {
 
 	// Impossible to test once we test for default exclusions
 	it('returns an empty array for unconfigured packages', () => {
-		process.chdir(
-			`${projectDir}/packages/liferay-npm-bundler/src/__tests__/config/` +
-				'empty'
-		);
+		process.chdir(path.join(__dirname, '__fixtures__', 'config', 'empty'));
 		cfg.reloadConfig();
 
 		const pkg = {
@@ -135,8 +175,7 @@ describe('getPlugins()', () => {
 
 	it('supports legacy package configurations correctly', () => {
 		process.chdir(
-			`${projectDir}/packages/liferay-npm-bundler/src/__tests__/config/` +
-				'legacy-packages'
+			path.join(__dirname, '__fixtures__', 'config', 'legacy-packages')
 		);
 		cfg.reloadConfig();
 
@@ -224,5 +263,63 @@ describe('getPluginVersions()', () => {
 		expect(versions['liferay-npm-bundler-plugin-test-5']).toEqual('1.0.5');
 		expect(versions['liferay-npm-bundler-plugin-test-6']).toEqual('1.0.6');
 		expect(versions['liferay-npm-bundler-plugin-test-7']).toEqual('1.0.7');
+	});
+});
+
+describe('presets', () => {
+	it('should work with existing presets', () => {
+		process.chdir(
+			path.join(__dirname, '__fixtures__', 'config', 'presets')
+		);
+		cfg.reloadConfig();
+
+		const globalCfg = cfg.getGlobalConfig();
+		expect(globalCfg.imports).toBeDefined();
+
+		const expectedImports = [
+			'frontend-js-metal-web',
+			'frontend-js-node-shims',
+			'frontend-js-spa-web',
+			'frontend-taglib',
+			'frontend-taglib-clay',
+		];
+
+		expectedImports.map(v => {
+			expect(globalCfg.imports[v]).toBeDefined();
+		});
+
+		const frontendJsWebImports = {
+			'/': '>=7.0.0',
+		};
+
+		expect(globalCfg.imports['frontend-js-web']).toMatchObject(
+			frontendJsWebImports
+		);
+
+		const frontendJsNodeShimsImports = {
+			'assert': '>=1.2.0',
+			'buffer': '>=5.0.7',
+			'console-browserify': '>=1.1.0',
+			'domain-browser': '>=1.1.7',
+			'events': '>=1.1.1',
+			'os-browserify': '>=0.3.0',
+			'path-browserify': '>=0.0.0',
+			'process': '>=0.11.10',
+			'punycode': '>=1.3.1',
+			'querystring-es3': '>=0.2.1',
+			'setimmediate': '>=1.0.0',
+			'string_decoder': '>=1.0.3',
+			'timers-browserify': '>=2.0.4',
+			'tty-browserify': '>=0.0.0',
+			'url': '>=0.11.0',
+			'util': '>=0.10.3',
+			'vm-browserify': '>=0.0.4',
+		};
+
+		expect(globalCfg.imports['frontend-js-node-shims']).toMatchObject(
+			frontendJsNodeShimsImports
+		);
+
+		expect(cfg.isDumpReport()).toBeFalsy();
 	});
 });
