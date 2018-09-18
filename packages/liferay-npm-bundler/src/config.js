@@ -3,6 +3,7 @@ import {getPackageDir} from 'liferay-npm-build-tools-common/lib/packages';
 import path from 'path';
 import readJsonSync from 'read-json-sync';
 import resolveModule from 'resolve';
+import merge from 'merge';
 
 let pluginsBaseDir = '.';
 let config = loadConfig();
@@ -38,7 +39,8 @@ function loadConfig() {
 	}
 
 	if (presetFile) {
-		config = Object.assign(readJsonSync(presetFile), config);
+		// config = Object.assign(readJsonSync(presetFile), config);
+		config = merge.recursive(true, readJsonSync(presetFile), config);
 		pluginsBaseDir = getPackageDir(presetFile);
 	}
 
