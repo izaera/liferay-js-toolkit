@@ -239,6 +239,8 @@ function tweakIndexJs() {
 		plugins: [babelPlugin],
 	});
 
+	console.log(result.code);
+
 	fs.writeFileSync(indexJsPath, indexJsNoticeHeader + result.code);
 }
 

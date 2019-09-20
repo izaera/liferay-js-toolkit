@@ -31,6 +31,11 @@ import PkgJsonModifier from '../utils/modifier/package.json';
 import LanguagePropertiesModifier from '../utils/modifier/features/localization/Language.properties';
 
 const msg = {
+	angularCliDetected: [
+		success`
+		We have detected a project of type {angular-cli}
+		`,
+	],
 	createReactAppDetected: [
 		success`
 		We have detected a project of type {create-react-app}
@@ -109,7 +114,14 @@ export default class extends Generator {
 
 		print(msg.welcome);
 
+		console.log(project.probe.type);
+
 		switch (project.probe.type) {
+			case project.probe.TYPE_ANGULAR_CLI:
+				print(msg.angularCliDetected);
+				this._tuneProject = () => this._tuneAngularCliProject();
+				break;
+
 			case project.probe.TYPE_CREATE_REACT_APP:
 				print(msg.createReactAppDetected);
 				this._tuneProject = () => this._tuneCreateReactAppProject();
@@ -279,6 +291,19 @@ export default class extends Generator {
 		);
 	}
 
+	_tuneAngularCliProject() {
+		const npmbundlerrc = new NpmbundlerrcModifier(this);
+		const pkgJson = new PkgJsonModifier(this, 2);
+
+		npmbundlerrc.setPreset('liferay-npm-bundler-preset-angular-cli');
+
+		pkgJson.addDevDependency(
+			'liferay-npm-bundler-preset-angular-cli',
+			getSDKVersion('liferay-npm-bundler-preset-angular-cli', {
+				ignoreConfig: true,
+			})
+		);
+	}
 	_tuneCreateReactAppProject() {
 		const npmbundlerrc = new NpmbundlerrcModifier(this);
 		const pkgJson = new PkgJsonModifier(this, 2);

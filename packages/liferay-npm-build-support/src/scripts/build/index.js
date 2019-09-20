@@ -6,6 +6,7 @@
 
 import {error, info, print} from 'liferay-npm-build-tools-common/lib/format';
 
+import * as angularCli from './angular-cli';
 import * as createReactApp from './create-react-app';
 
 const msg = {
@@ -22,7 +23,9 @@ const msg = {
 };
 
 export default function() {
-	if (createReactApp.probe()) {
+	if (angularCli.probe()) {
+		angularCli.run();
+	} else if (createReactApp.probe()) {
 		createReactApp.run();
 	} else {
 		print(msg.unsupportedProjectType);
