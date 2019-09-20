@@ -23,9 +23,10 @@
 	"devDependencies": {
 		"eslint": "^5.15.1",
 		"eslint-config-liferay": "^3.0.0",
-		"jest": "^20.0.4",
+		"jest": "^24.0.0",
 		"lerna": "^2.0.0-rc.5",
-		"prettier": "1.16.4"
+		"prettier": "1.16.4",
+		"typescript": "^3.6.3"
 	},
 	"jest": {
 		"modulePathIgnorePatterns": [
@@ -37,9 +38,14 @@
 		"testPathIgnorePatterns": [
 			"/node_modules/",
 			"/__fixtures__/"
-		]
+		],
+		"transform": {
+			"\\.js$": "ts-jest",
+			"\\.ts$": "ts-jest"
+		}
 	},
 	"dependencies": {
+		"ts-jest": "^24.1.0",
 		"xml-js": "^1.6.8"
 	}
 }

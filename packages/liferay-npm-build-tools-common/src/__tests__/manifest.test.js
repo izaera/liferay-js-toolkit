@@ -5,9 +5,9 @@
  */
 
 import Manifest from '../manifest';
+import PkgDesc from '../pkg-desc';
 
 import fs from 'fs';
-import PkgDesc from 'liferay-npm-build-tools-common/lib/pkg-desc';
 import path from 'path';
 
 it('addPackage/getPackage work', () => {

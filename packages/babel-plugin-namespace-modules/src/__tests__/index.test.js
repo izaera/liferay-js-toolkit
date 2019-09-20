@@ -46,7 +46,7 @@ describe('when called from Babel', () => {
 	it('correctly namespaces define() dependencies', () => {
 		const source = `
 			define(
-				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'], 
+				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'],
 				function(){
 				}
 			)
@@ -77,8 +77,8 @@ describe('when called from Babel', () => {
 	it('correctly namespaces all together', () => {
 		const source = `
 			define(
-				'a-module', 
-				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'], 
+				'a-module',
+				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'],
 				function(){
 					require('a-module');
 					require('imp-module');
@@ -131,7 +131,7 @@ describe('when called from liferay-npm-bundler', () => {
 	it('correctly namespaces define() dependencies', () => {
 		const source = `
 			define(
-				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'], 
+				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'],
 				function(){
 				}
 			)
@@ -182,8 +182,8 @@ describe('when called from liferay-npm-bundler', () => {
 	it('correctly namespaces all together', () => {
 		const source = `
 			define(
-				'a-module', 
-				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'], 
+				'a-module',
+				['a-module', 'imp-module', 'no-namespace-module', './a-local-module', 'fs'],
 				function(){
 					require('a-module');
 					require('imp-module');
@@ -205,8 +205,8 @@ describe('when called from liferay-npm-bundler', () => {
 	it('logs results correctly', () => {
 		const source = `
 			define(
-				'a-module', 
-				['a-module', 'imp-module', './a-local-module', 'fs'], 
+				'a-module',
+				['a-module', 'imp-module', './a-local-module', 'fs'],
 				function(){
 					require('a-module');
 					require('imp-module');
