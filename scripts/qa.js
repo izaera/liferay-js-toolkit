@@ -5,6 +5,7 @@
  */
 
 const childProcess = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 const qaDir = path.join(__dirname, '..', 'qa');
@@ -31,6 +32,12 @@ if (argv['generate']) {
 }
 
 if (argv['install']) {
+	try {
+		fs.unlinkSync(path.join(samplesDir, 'yarn.lock'));
+	} catch (err) {
+		// swallow
+	}
+
 	childProcess.spawnSync('yarn', ['install'], {
 		stdio: 'inherit',
 		cwd: samplesDir,
@@ -50,6 +57,12 @@ if (argv['install']) {
 
 if (argv['deploy']) {
 	childProcess.spawnSync('lerna', ['run', 'deploy'], {
+		stdio: 'inherit',
+		cwd: samplesDir,
+		shell: true,
+	});
+
+	childProcess.spawnSync('lerna', ['run', 'deploy:liferay'], {
 		stdio: 'inherit',
 		cwd: samplesDir,
 		shell: true,
