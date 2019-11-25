@@ -187,7 +187,7 @@ export function warn(literals, ...values) {
  *
  * @param emoji an emoji or empty string to prefix the text
  */
-function format(emoji: string, literals: string[], ...values: any[]): string {
+function format(emoji: string, literals: string[], values: any[]): string {
 	let ret: string = literals[0];
 
 	for (let i = 0; i < values.length; i++) {

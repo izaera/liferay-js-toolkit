@@ -12,13 +12,23 @@ import {
 import {removeWebpackHash} from './util';
 
 /**
+ * Tell the bundler we want contents as Buffer because we are not transforming
+ * anything.
+ */
+export const metadata = {
+	encoding: null,
+};
+
+/**
  * A loader that removes webpack hashes from filenames.
  *
  * @remarks
  * A webpack hash is defined as the rightmost hex number surrounded by dots in a
  * file name.
  */
-export default function(context: BundlerLoaderContext): BundlerLoaderReturn {
+export default function(
+	context: BundlerLoaderContext<Buffer>
+): BundlerLoaderReturn {
 	const {content, filePath, extraArtifacts, log} = context;
 
 	const newFilePath = removeWebpackHash(filePath);

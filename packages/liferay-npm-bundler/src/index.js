@@ -5,6 +5,13 @@
  */
 
 import fs from 'fs-extra';
+import {BuildError} from 'liferay-npm-build-tools-common/lib/api';
+import {
+	error,
+	info,
+	warn,
+	success,
+} from 'liferay-npm-build-tools-common/lib/format';
 import project from 'liferay-npm-build-tools-common/lib/project';
 import path from 'path';
 import pretty from 'pretty-time';
@@ -14,8 +21,8 @@ import semver from 'semver';
 import {addPackageDependencies, getRootPkg} from './dependencies';
 import * as insight from './insight';
 import createJar from './jar';
-import * as log from './log';
 import manifest from './manifest';
+import out from './out';
 import report from './report';
 
 import copyPackages from './steps/copy';
@@ -55,8 +62,8 @@ export default function(args) {
 	if (project.misc.noTracking) {
 		run();
 	} else {
-		log.debug(
-			'The tool is sending usage statistics to our remote servers.'
+		out.verbose(
+			info`The tool is sending usage statistics to our remote servers.`
 		);
 		insight.init().then(run);
 	}
@@ -90,15 +97,6 @@ function run() {
 		// Report rules config
 		report.rulesConfig(project.rules.config);
 
-		// Warn about incremental builds
-		if (manifest.loadedFromFile) {
-			report.warn(
-				'This report is from an incremental build: some steps may be ' +
-					'missing (you may remove the output directory to force a ' +
-					'full build).'
-			);
-		}
-
 		// Do things
 		copyPackages(rootPkg, depPkgs)
 			.then(() => runRules(rootPkg, depPkgs))
@@ -106,13 +104,32 @@ function run() {
 			.then(() => manifest.save())
 			.then(() => (project.jar.supported ? createJar() : undefined))
 			.then(() => {
-				// Report and show execution time
-				const hrtime = process.hrtime(start);
-				report.executionTime(hrtime);
-				log.info(`Bundling took ${pretty(hrtime)}`);
-
 				// Send report analytics data
 				report.sendAnalytics();
+
+				// Notify about warnings
+				if (report.warningsPresent) {
+					const tip = project.misc.reportFile
+						? `we recommend reviewing the report file for any potential errors`
+						: `we recommend adding the 'dump-report' option to '.npmbundlerrc' and running the build again`;
+
+					out(
+						warn`The bundling process has emitted some warning messages: ${tip}`
+					);
+				}
+
+				// Warn about incremental builds
+				if (manifest.loadedFromFile) {
+					out.verbose(
+						info`The bundler has run an incremental build: if anything fails try rebuilding from scratch before debugging`
+					);
+
+					report.warn(
+						'This report is from an incremental build: some steps may be ' +
+							'missing (you may remove the output directory to force a ' +
+							'full build).'
+					);
+				}
 
 				// Write report if requested
 				if (project.misc.reportFile) {
@@ -121,12 +138,15 @@ function run() {
 						report.toHtml()
 					);
 
-					log.info(
-						`Report written to ${project.misc.reportFile.asNative}`
+					out(
+						info`Report written to ${project.misc.reportFile.asNative}`
 					);
-				} else if (report.warningsPresent) {
-					log.debug('The build has emitted some warning messages.');
 				}
+
+				// Report and show execution time
+				const hrtime = process.hrtime(start);
+				report.executionTime(hrtime);
+				out([success`Bundling took ${pretty(hrtime)}`]);
 			})
 			.catch(abort);
 	} catch (err) {
@@ -173,11 +193,38 @@ function reportLinkedDependencies(pkgJson) {
  * @return {void}
  */
 function abort(err) {
-	log.error(`
+	if (err instanceof BuildError) {
+		const {actionInProgress, errorDescriptions} = err;
 
-${err.stack}
+		let msgs;
 
-`);
+		if (errorDescriptions.length > 1) {
+			msgs = [
+				error`Bundling errors while ${actionInProgress}:`,
+				'',
+				...errorDescriptions.map(desc => `{  · ${desc}}`),
+			];
+		} else {
+			msgs = [
+				error`Bundling error while ${actionInProgress}: ` +
+					`{${errorDescriptions[0]}}`,
+			];
+		}
+
+		out.always(['', '', ...msgs, '', '']);
+	} else {
+		out.always([
+			'',
+			'',
+			error`Unhandled ${err}`,
+			err.stack
+				.split('\n')
+				.slice(1)
+				.join('\n'),
+			'',
+			'',
+		]);
+	}
 
 	process.exit(1);
 }

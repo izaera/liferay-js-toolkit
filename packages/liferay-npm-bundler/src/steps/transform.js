@@ -9,6 +9,7 @@ import clone from 'clone';
 import parseDataURL from 'data-urls';
 import fs from 'fs-extra';
 import * as babelIpc from 'liferay-npm-build-tools-common/lib/babel-ipc';
+import {info} from 'liferay-npm-build-tools-common/lib/format';
 import * as gl from 'liferay-npm-build-tools-common/lib/globs';
 import {getPackageTargetDir} from 'liferay-npm-build-tools-common/lib/packages';
 import PkgDesc from 'liferay-npm-build-tools-common/lib/pkg-desc';
@@ -18,8 +19,8 @@ import path from 'path';
 import readJsonSync from 'read-json-sync';
 import rimraf from 'rimraf';
 
-import * as log from '../log';
 import manifest from '../manifest';
+import out from '../out';
 import report from '../report';
 import {findFiles, getDestDir, runInChunks, runPlugins} from './util';
 
@@ -32,9 +33,9 @@ import {findFiles, getDestDir, runInChunks, runPlugins} from './util';
 export default function transformPackages(rootPkg, depPkgs) {
 	const dirtyPkgs = [rootPkg, ...depPkgs].filter(srcPkg => !srcPkg.clean);
 
-	return Promise.all(dirtyPkgs.map(srcPkg => transformPackage(srcPkg))).then(
-		() => log.debug(`Transformed ${dirtyPkgs.length} packages`)
-	);
+	return Promise.all(
+		dirtyPkgs.map(srcPkg => transformPackage(srcPkg))
+	).then(() => out.verbose(info`Transformed ${dirtyPkgs.length} packages`));
 }
 
 /**
@@ -47,7 +48,7 @@ function transformPackage(srcPkg) {
 		return Promise.resolve();
 	}
 
-	log.debug(`Transforming package '${srcPkg.id}'...`);
+	out.verbose(info`Transforming package '${srcPkg.id}'...`);
 
 	const destPkg = srcPkg.clone({
 		dir: getDestDir(srcPkg),
@@ -58,7 +59,7 @@ function transformPackage(srcPkg) {
 		.then(() => runBundlerPlugins('post', srcPkg, destPkg))
 		.then(() => renamePkgDirIfNecessary(destPkg))
 		.then(destPkg => manifest.addPackage(srcPkg, destPkg))
-		.then(() => log.debug(`Transformed package '${srcPkg.id}'`));
+		.then(() => out.verbose(info`Transformed package '${srcPkg.id}'`));
 }
 
 /**
@@ -159,8 +160,8 @@ function babelifyPackage(destPkg) {
 		gl.prefix(`${project.dir.asPosix}/${destPkg.dir.asPosix}/`, globs)
 	);
 
-	log.debug(
-		`Babelifying ${prjRelPaths.length} files in package '${destPkg.id}'...`
+	out.verbose(
+		info`Babelifying ${prjRelPaths.length} files in package '${destPkg.id}'...`
 	);
 
 	return runInChunks(

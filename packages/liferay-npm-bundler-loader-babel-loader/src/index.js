@@ -5,7 +5,10 @@
  */
 
 import * as babel from 'babel-core';
+import fs from 'fs';
+import {BuildError} from 'liferay-npm-build-tools-common/lib/api';
 import project from 'liferay-npm-build-tools-common/lib/project';
+import readJsonSync from 'read-json-sync';
 
 /**
  * @param {object} context loader's context
@@ -15,12 +18,15 @@ import project from 'liferay-npm-build-tools-common/lib/project';
 export default function(context, config) {
 	const {content, filePath, log, sourceMap} = context;
 
+	const babelRcPath = project.dir.join('.babelrc').asNative;
+
 	const babelConfig = Object.assign(
 		{
 			filename: project.dir.join(filePath).asNative,
 			filenameRelative: filePath,
 			inputSourceMap: sourceMap,
 		},
+		fs.existsSync(babelRcPath) ? readJsonSync(babelRcPath) : {},
 		config
 	);
 
@@ -38,14 +44,24 @@ export default function(context, config) {
 	);
 	delete babelConfig.presets;
 
-	const result = babel.transform(content, babelConfig);
+	try {
+		const result = babel.transform(content, babelConfig);
+		context.sourceMap = result.map;
+		context.extraArtifacts[`${filePath}.map`] = JSON.stringify(result.map);
 
-	context.sourceMap = result.map;
-	context.extraArtifacts[`${filePath}.map`] = JSON.stringify(result.map);
+		log.info('babel-loader', 'Transpiled file');
 
-	log.info('babel-loader', 'Transpiled file');
-
-	return result.code;
+		return result.code;
+	} catch (err) {
+		throw new BuildError(
+			`transpiling ${filePath}`,
+			`Cause: ${err.message
+				.split(': ')
+				.slice(1)
+				.join(': ')}`,
+			`In code:\n${err.codeFrame}`
+		);
+	}
 }
 
 /**

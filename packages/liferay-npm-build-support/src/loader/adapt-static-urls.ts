@@ -42,7 +42,7 @@ export interface Options {
  * inside `.npmbundlerrc`.
  */
 export default function(
-	context: BundlerLoaderContext,
+	context: BundlerLoaderContext<string>,
 	options: Options
 ): BundlerLoaderReturn {
 	const {content, log} = context;

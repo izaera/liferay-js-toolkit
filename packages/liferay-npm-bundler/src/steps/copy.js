@@ -5,12 +5,13 @@
  */
 
 import fs from 'fs-extra';
+import {info} from 'liferay-npm-build-tools-common/lib/format';
 import * as gl from 'liferay-npm-build-tools-common/lib/globs';
 import project from 'liferay-npm-build-tools-common/lib/project';
 import path from 'path';
 
-import * as log from '../log';
 import manifest from '../manifest';
+import out from '../out';
 import report from '../report';
 import {findFiles, getDestDir, runPlugins} from './util';
 
@@ -24,7 +25,9 @@ export default function copyPackages(rootPkg, depPkgs) {
 	const pkgs = [rootPkg, ...depPkgs];
 
 	return Promise.all(pkgs.map(srcPkg => copyPackage(srcPkg))).then(() =>
-		log.debug(`Copied ${pkgs.filter(pkg => !pkg.clean).length} packages`)
+		out.verbose(
+			info`Copied ${pkgs.filter(pkg => !pkg.clean).length} packages`
+		)
 	);
 }
 
@@ -42,7 +45,7 @@ function copyPackage(srcPkg) {
 		return Promise.resolve();
 	}
 
-	log.debug(`Copying package '${srcPkg.id}'...`);
+	out.verbose(info`Copying package '${srcPkg.id}'...`);
 
 	srcPkg.clean = false;
 

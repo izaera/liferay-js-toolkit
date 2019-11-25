@@ -55,6 +55,13 @@ export class Report {
 	}
 
 	/**
+	 * Get stored warnings.
+	 */
+	get warnings() {
+		return this._warnings;
+	}
+
+	/**
 	 * Test if there are global warning messages present.
 	 * @return {boolean} true if warnings exist
 	 */
@@ -64,8 +71,9 @@ export class Report {
 
 	/**
 	 * Register a warning.
-	 * @param  {String} message the warning message
-	 * @param  {boolean} unique set to true if you want this warning to be deduped
+	 * @param {String} message the warning message
+	 * @param {object} options
+	 *        unique: set to true if you want this warning to be deduped
 	 * @return {void}
 	 */
 	warn(message, {unique} = {unique: false}) {

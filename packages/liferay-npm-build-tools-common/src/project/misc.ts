@@ -97,6 +97,15 @@ export default class Misc {
 	}
 
 	/**
+	 * Whether to avoid showing any output to the user
+	 */
+	get silent() {
+		const {npmbundlerrc} = this._project;
+
+		return prop.get(npmbundlerrc, 'silent', false);
+	}
+
+	/**
 	 * Whether or not to dump detailed information about what the tool is doing
 	 */
 	get verbose(): boolean {

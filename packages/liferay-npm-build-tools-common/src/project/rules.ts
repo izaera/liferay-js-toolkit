@@ -7,7 +7,11 @@
 import clone from 'clone';
 import path from 'path';
 
-import {BundlerLoaderEntryPoint, BundlerLoaderMetadata} from '../api/loaders';
+import {
+	BundlerLoaderContent,
+	BundlerLoaderEntryPoint,
+	BundlerLoaderMetadata,
+} from '../api/loaders';
 import FilePath from '../file-path';
 import {splitModuleName} from '../modules';
 import {Project} from '.';
@@ -19,7 +23,7 @@ import {VersionInfo} from './types';
 export interface BundlerLoaderDescriptor {
 	loader: string;
 	resolvedModule: string;
-	exec: BundlerLoaderEntryPoint;
+	exec: BundlerLoaderEntryPoint<BundlerLoaderContent>;
 	options: object;
 	metadata: BundlerLoaderMetadata;
 }

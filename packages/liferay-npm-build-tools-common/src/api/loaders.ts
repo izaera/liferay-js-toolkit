@@ -34,41 +34,80 @@ export interface BundlerLoaderMetadata {
 	 *
 	 * By default 'utf-8' is used if the loader doesn't export any metadata or
 	 * if metadata is exported but `encoding` is left `undefined`.
+	 *
+	 * @see BundlerLoaderContent
 	 */
-	encoding?: string | null;
+	encoding?: BufferEncoding | null;
 }
 
 /**
  * A bundler loader plugin entry point
  */
-export interface BundlerLoaderEntryPoint {
+export interface BundlerLoaderEntryPoint<T extends BundlerLoaderContent> {
 	(
 		/** Context of execution */
-		context: BundlerLoaderContext,
+		context: BundlerLoaderContext<T>,
 
 		/** Configured options for the loader */
 		options: object
-	): BundlerLoaderReturn;
+	): BundlerLoaderReturn | Promise<BundlerLoaderReturn>;
 }
 
 /**
  * A bundler loader execution context
  */
-export interface BundlerLoaderContext {
-	/** Content of main transformed object */
-	content: string;
+export interface BundlerLoaderContext<T extends BundlerLoaderContent> {
+	/**
+	 * Content of main transformed object.
+	 *
+	 * @see BundlerLoaderMetadata#encoding
+	 */
+	content: T;
 
 	/** Path to main transformed object (relative to project dir) */
 	filePath: string;
 
-	/**
-	 * Hash of extra objects to write (keys are paths relative to output
-	 * dir and values are the content of the file)
-	 */
-	extraArtifacts: object;
+	/** Extra artifacts */
+	extraArtifacts: ExtraArtifacts<T>;
 
 	/** A standard plugin logger to write things to the report */
 	log: PluginLogger;
+
+	/** A reference to the bundler */
+	bundler: BundlerLoaderCallbacks;
+}
+
+/**
+ * The content of a file processed by bundler loaders.
+ *
+ * @see BundlerLoaderMetadata#encoding
+ */
+export type BundlerLoaderContent = string | Buffer;
+
+/**
+ * Hash of extra objects to write (keys are paths relative to output
+ * dir and values are the content of the file).
+ *
+ * @see BundlerLoaderMetadata#encoding
+ */
+export interface ExtraArtifacts<T extends BundlerLoaderContent> {
+	[filePath: string]: T;
+}
+
+/**
+ * A bunch of functions to be able to callback into the bundler to achieve
+ * certain things.
+ */
+export interface BundlerLoaderCallbacks {
+	/**
+	 * Emit a new file that does not exist in the project source tree and
+	 * process it as if it had been read from the same package as the current
+	 * file.
+	 *
+	 * @param filePath path of virtual file (relative to context's package)
+	 * @throws {@link Error} if the file has been already emitted
+	 */
+	emitVirtualFile(filePath: string, content: Buffer): Promise<void>;
 }
 
 /**

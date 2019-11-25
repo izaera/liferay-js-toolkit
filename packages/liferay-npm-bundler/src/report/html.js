@@ -657,8 +657,11 @@ function htmlLogOutput(
 					${sourceCell}
 					<td class="${msg0.level}">${msg0.level.toUpperCase()}</td>
 					<td>${infoLink}</td>
-					<td>${msg0.things.join(' ')}</td>
-				`,
+					<td>${msg0.things
+						.join(' ')
+						.replace(/ /g, '&nbsp;')
+						.replace(/\n/g, '<br>')}</td>
+					`,
 					msg0.level
 				)
 			);
@@ -683,8 +686,11 @@ function htmlLogOutput(
 							${msgs[i].level.toUpperCase()}
 						</td>
 						<td>${infoLink}</td>
-						<td>${msgs[i].things.join(' ')}</td>
-					`,
+						<td>${msgs[i].things
+							.join(' ')
+							.replace(/ /g, '&nbsp;')
+							.replace(/\n/g, '<br>')}</td>
+						`,
 						msgs[i].level
 					)
 				);
